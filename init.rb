@@ -23,7 +23,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   # fork an app
   #
-  # -r, --region  # specify a region
+  # -r, --region REGION  # specify a region
   #
   def fork
     from = app
@@ -73,43 +73,9 @@ class Heroku::Command::Apps < Heroku::Command::Base
     end
   end
 
+  alias_command "fork", "apps:fork"
+
 private
-
-  def download_bundle(app, filename)
-    file = File.open(filename, "wb")
-    uri  = URI.parse("#{bundle_host}/apps/#{app}/bundle")
-    http = Net::HTTP.new(uri.host, uri.port)
-
-    if uri.scheme == "https"
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    end
-
-    req = Net::HTTP::Get.new uri.request_uri
-
-    req.basic_auth "", Heroku::Auth.password
-
-    print "Creating bundle for #{app}... "
-
-    http.request(req) do |res|
-      error res.body unless res.code.to_i == 200
-      length = res.fetch("content-length").to_i
-      puts "done"
-
-      Progress.start("Downloading", res.fetch("Content-Length").to_i) do
-        begin
-          res.read_body do |chunk|
-            file.print chunk
-            Progress.step chunk.length
-          end
-        rescue Exception => ex
-          error "download failed: #{ex.message}"
-        end
-      end
-    end
-  ensure
-    file.close
-  end
 
   def fork_service
     RestClient::Resource.new(fork_host, "", Heroku::Auth.api_key)
