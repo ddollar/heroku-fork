@@ -1,21 +1,4 @@
-$:.unshift File.expand_path("../vendor/progress/lib", __FILE__)
-
-require "cgi"
-require "net/http"
-require "net/https"
-require "progress"
-require "tmpdir"
-require "zlib"
-
-class Heroku::API
-  def get_release_slug(app)
-    request(
-      :expects  => 200,
-      :method   => :get,
-      :path     => "/apps/#{app}/release_slug"
-    )
-  end
-end
+require "rest_client"
 
 class Heroku::Command::Apps < Heroku::Command::Base
 
@@ -23,7 +6,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   # fork an app
   #
-  # -r, --region REGION  # specify a region
+  # -r, --region REGION # specify a region
   #
   def fork
     from = app
