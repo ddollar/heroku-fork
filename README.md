@@ -1,6 +1,6 @@
 # heroku-fork
 
-Fork Heroku apps.
+Fork Heroku apps
 
 ## Installation
 
