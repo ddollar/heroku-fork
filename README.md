@@ -7,7 +7,7 @@
 ## Usage
 
     $ heroku fork -a example
-    Creating fork dxd-fork... done
+    Creating fork example-729... done
     Copying slug... done
     Adding cloudant:oxygen... done
     Adding deployhooks:http... done
