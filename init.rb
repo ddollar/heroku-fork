@@ -30,7 +30,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
     from_config = api.get_config_vars(from).body
 
     api.get_addons(from).body.each do |addon|
-      if addon["name"] =~ /^heroku-postgresql:/
+      if addon["name"] =~ /^heroku-postgresql:/ and !%w( heroku-postgresql:dev heroku-postgresql:basic ).include?(addon["name"])
         action("Forking #{addon["name"]}") do
           url = from_config.delete("#{addon["attachment_name"]}_URL")
           addon = api.post_addon(to, addon["name"], :fork => url).body
