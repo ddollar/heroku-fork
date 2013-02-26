@@ -1,5 +1,7 @@
 # heroku-fork
 
+Fork Heroku apps.
+
 ## Installation
 
     $ heroku plugins:install https://github.com/ddollar/heroku-fork
