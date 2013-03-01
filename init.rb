@@ -52,23 +52,6 @@ class Heroku::Command::Apps < Heroku::Command::Base
       end
     end
 
-    # if from_addons.detect { |addon| addon["name"] =~ /^heroku-postgresql:/
-    #     action("Restoring database backup to #{new_app}") do
-    #       pgb = Heroku::Client::Pgbackups.new(api.get_config_vars(new_app).body["PGBACKUPS_URL"])
-    #       transfer = pgb.create_transfer(transfer["public_url"], "EXTERNAL_BACKUP", api.get_config_vars(new_app).body["DATABASE_URL"], "DATABASE_URL")
-    #       error transfer["errors"].values.flatten.join("\n") if transfer["errors"]
-    #       loop do
-    #         transfer = pgb.get_transfer(transfer["id"])
-    #         error transfer["errors"].values.flatten.join("\n") if transfer["errors"]
-    #         break if transfer["finished_at"]
-    #         sleep 1
-    #         print "."
-    #       end
-    #       print " "
-    #     end
-    #   end
-    # end
-
     to_config = api.get_config_vars(to).body
 
     action("Copying config vars") do
