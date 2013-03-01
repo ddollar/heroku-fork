@@ -121,17 +121,25 @@ private
     end
   end
 
-  def pg_api
-    RestClient::Resource.new "https://postgres-starter-api.heroku.com/client/v11/databases", Heroku::Auth.user, Heroku::Auth.password
-
+  def pg_api(starter=false)
+    host = starter ? "postgres-starter-api.heroku.com" : "postgres-api.heroku.com"
+    RestClient::Resource.new "https://#{host}/client/v11/databases", Heroku::Auth.user, Heroku::Auth.password
   end
 
   def wait_for_db(app, attachment)
     attachments = api.get_attachments(app).body.inject({}) { |ax,att| ax.update(att["name"] => att["resource"]["name"]) }
     attachment_name = attachment["message"].match(/Attached as (\w+)_URL\n/)[1]
-    loop do
-      waiting = json_decode(pg_api["#{attachments[attachment_name]}/wait_status"].get.to_s)["waiting?"]
-      break unless waiting
+    action("Waiting for database to be ready") do
+      loop do
+        begin
+          waiting = json_decode(pg_api["#{attachments[attachment_name]}/wait_status"].get.to_s)["waiting?"]
+          break unless waiting
+          print "."
+          sleep 1
+        rescue RestClient::ResourceNotFound
+        end
+      end
+      print " "
     end
   end
 
