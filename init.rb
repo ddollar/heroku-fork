@@ -62,8 +62,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
       api.put_config_vars to, diff
     end
 
-    puts "Your app fork is at:"
-    puts "https://#{to}.herokuapp.com/"
+    puts "Fork complete, view it at https://#{to}.herokuapp.com/"
   end
 
   alias_command "fork", "apps:fork"
