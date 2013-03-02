@@ -45,6 +45,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
         api.post_addon(to, addon["name"]).body
       end
       if addon["name"] =~ /^heroku-postgresql:/
+        from_var_name = "#{addon["attachment_name"]}_URL"
+        from_attachment = to_addon["message"].match(/Attached as (\w+)_URL\n/)[1]
+        if from_config[from_var_name] == from_config["DATABASE_URL"]
+          from_config["DATABASE_URL"] = api.get_config_vars(to).body["#{from_attachment}_URL"]
+        end
+        from_config.delete(from_var_name)
         wait_for_db to, to_addon
         check_for_pgbackups! from
         check_for_pgbackups! to
@@ -135,8 +141,10 @@ private
           waiting = json_decode(pg_api["#{attachments[attachment_name]}/wait_status"].get.to_s)["waiting?"]
           break unless waiting
           print "."
-          sleep 1
+          sleep 5
         rescue RestClient::ResourceNotFound
+        rescue Interrupt
+          exit 0
         end
       end
       print " "
