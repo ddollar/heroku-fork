@@ -25,12 +25,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
     from_info = api.get_app(from).body
     to_tier   = from_info["tier"] == "legacy" ? "production" : from_info["tier"]
 
-    action("Creating fork #{to}") do
+    to_info = action("Creating fork #{to}") do
       api.post_app({
         :name   => to,
         :region => options[:region],
         :tier   => to_tier
-      })
+      }).body
     end
 
     action("Copying slug") do
@@ -73,7 +73,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
       api.put_config_vars to, diff
     end
 
-    puts "Fork complete, view it at https://#{to}.herokuapp.com/"
+    puts "Fork complete, view it at #{to_info['web_url']}"
   end
 
   alias_command "fork", "apps:fork"
