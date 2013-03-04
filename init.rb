@@ -42,7 +42,11 @@ class Heroku::Command::Apps < Heroku::Command::Base
 
     from_addons.each do |addon|
       to_addon = action("Adding #{addon["name"]}") do
-        api.post_addon(to, addon["name"]).body
+        begin
+          api.post_addon(to, addon["name"]).body
+        rescue Heroku::API::Errors::NotFound
+          print "(not found, skipping) "
+        end
       end
       if addon["name"] =~ /^heroku-postgresql:/
         from_var_name = "#{addon["attachment_name"]}_URL"
