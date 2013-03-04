@@ -41,12 +41,14 @@ class Heroku::Command::Apps < Heroku::Command::Base
     from_addons = api.get_addons(from).body
 
     from_addons.each do |addon|
-      to_addon = action("Adding #{addon["name"]}") do
-        begin
-          api.post_addon(to, addon["name"]).body
-        rescue Heroku::API::Errors::NotFound
-          print "(not found, skipping) "
-        end
+      print "Adding #{addon["name"]}... "
+      begin
+        to_addon = api.post_addon(to, addon["name"]).body
+        puts "done"
+      rescue Heroku::API::Errors::RequestFailed => ex
+        puts "skipped (%s)" % json_decode(ex.response.body)["error"]
+      rescue Heroku::API::Errors::NotFound
+        puts "skipped (not found)"
       end
       if addon["name"] =~ /^heroku-postgresql:/
         from_var_name = "#{addon["attachment_name"]}_URL"
