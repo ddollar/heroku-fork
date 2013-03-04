@@ -51,7 +51,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
           from_config["DATABASE_URL"] = api.get_config_vars(to).body["#{from_attachment}_URL"]
         end
         from_config.delete(from_var_name)
-        wait_for_db to, to_addon
+
+        plan = addon["name"].split(":").last
+        unless %w(dev basic).include? plan
+          wait_for_db to, to_addon
+        end
+
         check_for_pgbackups! from
         check_for_pgbackups! to
         migrate_db addon, from, to_addon, to
