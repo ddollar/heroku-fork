@@ -34,7 +34,14 @@ class Heroku::Command::Apps < Heroku::Command::Base
     end
 
     action("Copying slug") do
-      fork_service["/apps/#{app}/copy/#{to}"].post("")
+      job = cisaurus["/v1/apps/#{from}/copy/#{to}"].post(json_encode("description" => "Forked from #{from}"), :content_type => :json).headers[:location]
+      loop do
+        print "."
+        done = cisaurus[job].get.code
+        break unless done == 202
+        sleep 1
+      end
+      print " "
     end
 
     from_config = api.get_config_vars(from).body
@@ -86,12 +93,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
 
 private
 
-  def fork_service
-    RestClient::Resource.new(fork_host, "", Heroku::Auth.api_key)
+  def cisaurus_host
+    ENV["CISAURUS_HOST"] || "https://cisaurus.herokuapp.com"
   end
 
-  def fork_host
-    ENV["FORK_HOST"] || "https://fork.herokuapp.com"
+  def cisaurus
+    RestClient::Resource.new(cisaurus_host, "", Heroku::Auth.api_key)
   end
 
   def check_for_pgbackups!(app)
