@@ -25,12 +25,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
     from_info = api.get_app(from).body
     to_tier   = from_info["tier"] == "legacy" ? "production" : from_info["tier"]
 
-    action("Creating fork #{to}") do
+    to_info = action("Creating fork #{to}") do
       api.post_app({
         :name   => to,
         :region => options[:region],
         :tier   => to_tier
-      })
+      }).body
     end
 
     action("Copying slug") do
@@ -42,7 +42,11 @@ class Heroku::Command::Apps < Heroku::Command::Base
 
     from_addons.each do |addon|
       to_addon = action("Adding #{addon["name"]}") do
-        api.post_addon(to, addon["name"]).body
+        begin
+          api.post_addon(to, addon["name"]).body
+        rescue Heroku::API::Errors::NotFound
+          print "(not found, skipping) "
+        end
       end
       if addon["name"] =~ /^heroku-postgresql:/
         from_var_name = "#{addon["attachment_name"]}_URL"
@@ -51,7 +55,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
           from_config["DATABASE_URL"] = api.get_config_vars(to).body["#{from_attachment}_URL"]
         end
         from_config.delete(from_var_name)
-        wait_for_db to, to_addon
+
+        plan = addon["name"].split(":").last
+        unless %w(dev basic).include? plan
+          wait_for_db to, to_addon
+        end
+
         check_for_pgbackups! from
         check_for_pgbackups! to
         migrate_db addon, from, to_addon, to
@@ -68,7 +77,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
       api.put_config_vars to, diff
     end
 
-    puts "Fork complete, view it at https://#{to}.herokuapp.com/"
+    puts "Fork complete, view it at #{to_info['web_url']}"
   end
 
   alias_command "fork", "apps:fork"
