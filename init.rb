@@ -16,20 +16,21 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   # fork an app
   #
-  # -r, --region REGION # specify a region
+  # -r, --region REGION  # specify a region
+  # -s, --stack  STACK   # specify a stack
   #
   def fork
     from = app
     to = shift_argument || "#{from}-#{(rand*1000).to_i}"
 
     from_info = api.get_app(from).body
-    to_tier   = from_info["tier"] == "legacy" ? "production" : from_info["tier"]
 
     to_info = action("Creating fork #{to}") do
       api.post_app({
         :name   => to,
-        :region => options[:region],
-        :tier   => to_tier
+        :region => options[:region] || from_info["region"],
+        :stack  => options[:stack] || from_info["stack"],
+        :tier   => from_info["tier"] == "legacy" ? "production" : from_info["tier"]
       }).body
     end
 
