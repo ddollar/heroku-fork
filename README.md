@@ -1,7 +1,5 @@
-# heroku-fork
+# Deprecated
 
-The `heroku-fork` plugin is deprecated. Forking is now a feature of the [Heroku Toolbelt](https://toolbelt.heroku.com/). Update to the latest toolbelt with:
+This project is deprecated and is no longer being maintained.
 
-```console
-$ heroku update
-```
+Please check out my current project [Convox](https://convox.com) for all of your deployment needs!
